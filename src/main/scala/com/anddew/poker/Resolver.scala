@@ -37,11 +37,13 @@ class Resolver {
           val ranks = straightFlush.flatten.foldRight(Set.empty[Rank])(
             (card, set) => set + card.rank
           )
-          suits.size == 1 && ranks.size == 5 && ranks
+          val pattern = ranks
             .toList
             .sorted(Ordering[Rank].reverse)
             .mkString.r
-            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined
+          suits.size == 1 && ranks.size == 5 && (
+            pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
+              pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
         }                                                                   => StraightFlush(straightFlush.flatten.map(_.rank).toList)
       case List(four, kicker) if four.size == 4                             => Four(four.map(_.rank) ::: kicker.map(_.rank))
       case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three.map(_.rank) ::: two.map(_.rank))
@@ -54,10 +56,13 @@ class Resolver {
           val ranks = straight.flatten.foldRight(Set.empty[Rank])((
             card, set) => set + card.rank
           )
-          ranks.size == 5 && ranks.toList
+          val pattern = ranks
+            .toList
             .sorted(Ordering[Rank].reverse)
             .mkString.r
-            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined
+          ranks.size == 5 && (
+            pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
+              pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
         }                                                                   => Straight(straight.flatten.map(_.rank).toList)
       case List(three, kickers @ _*) if three.size == 3                     => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
@@ -73,5 +78,6 @@ class Resolver {
 object Resolver {
 
   val STRAIGHT_SEQ = "AKQJT98765432A"
+  val WHEEL_STRAIGHT_SEQ = "A5432"
 
 }
