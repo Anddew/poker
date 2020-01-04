@@ -11,7 +11,7 @@ class Resolver {
 
 
   def resolve(board: List[Card], hand: List[Card]): Combination = {
-    (board ++ hand)
+    (board ::: hand)
       .combinations(5)
       .map(findTopCombination)
       .max
@@ -38,24 +38,24 @@ class Resolver {
           ).toList
             .sorted(Ordering[Rank].reverse)
             .mkString.r
-            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                   => StraightFlush(straightFlush.flatten.toList)
-      case List(four, kicker) if four.size == 4                             => Four(four ::: kicker)
-      case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three ::: two)
+            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                   => StraightFlush(straightFlush.flatten.map(_.rank).toList)
+      case List(four, kicker) if four.size == 4                             => Four(four.map(_.rank) ::: kicker.map(_.rank))
+      case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three.map(_.rank) ::: two.map(_.rank))
       case List(flush @ _*)
         if flush.flatten.foldRight(Set.empty[Suit])(
           (card, set) => set + card.suit
-        ).size == 1                                                         => Flush(flush.flatten.toList)
+        ).size == 1                                                         => Flush(flush.flatten.map(_.rank).toList)
       case List(straight @ _*)
         if straight.flatten.foldRight(Set.empty[Rank])((
           card, set) => set + card.rank
         ).toList
         .sorted(Ordering[Rank].reverse)
         .mkString.r
-        .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                       => Straight(straight.flatten.toList)
-      case List(three, kickers @ _*) if three.size == 3                     => Three(three ::: kickers.flatten.toList)
-      case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1 ::: pair2 ::: kicker)
-      case List(pair, kickers @ _*) if pair.size == 2                       => Pair(pair ::: kickers.flatten.toList)
-      case List(kickers @ _*)                                               => HighCard(kickers.flatten.toList)
+        .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                       => Straight(straight.flatten.map(_.rank).toList)
+      case List(three, kickers @ _*) if three.size == 3                     => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
+      case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
+      case List(pair, kickers @ _*) if pair.size == 2                       => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
+      case List(kickers @ _*)                                               => HighCard(kickers.flatten.map(_.rank).toList)
     }
 
   }

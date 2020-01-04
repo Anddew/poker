@@ -62,24 +62,7 @@ object Ranks {
 
 }
 
-class Card(val rank: Rank, val suit: Suit) {
-
-  def canEqual(a: Any) = a.isInstanceOf[Card]
-
-  override def equals(that: Any): Boolean =
-    that match {
-      case that: Card =>
-        that.canEqual(this) &&
-          this.rank == that.rank
-      case _ => false
-    }
-
-  override def hashCode: Int = {
-    val prime = 31
-    var result = 1
-    prime * result + rank.priority
-  }
-
+case class Card(rank: Rank, suit: Suit) {
   override def toString: String = s"${ rank.symbol }${ suit.symbol }"
 }
 
@@ -90,17 +73,17 @@ object Card {
 
 object Combinations {
 
-  sealed abstract class Combination(val weight: Int, val cards: List[Card])
+  sealed abstract class Combination(val weight: Int, val kickers: List[Rank])
 
-  case class StraightFlush(override val cards: List[Card]) extends Combination(9, cards)
-  case class Four(override val cards: List[Card]) extends Combination(8, cards)
-  case class FullHouse(override val cards: List[Card]) extends Combination(7, cards)
-  case class Flush(override val cards: List[Card]) extends Combination(6, cards)
-  case class Straight(override val cards: List[Card]) extends Combination(5, cards)
-  case class Three(override val cards: List[Card]) extends Combination(4, cards)
-  case class TwoPair(override val cards: List[Card]) extends Combination(3, cards)
-  case class Pair(override val cards: List[Card]) extends Combination(2, cards)
-  case class HighCard(override val cards: List[Card]) extends Combination(1, cards)
+  case class StraightFlush(override val kickers: List[Rank]) extends Combination(9, kickers)
+  case class Four(override val kickers: List[Rank]) extends Combination(8, kickers)
+  case class FullHouse(override val kickers: List[Rank]) extends Combination(7, kickers)
+  case class Flush(override val kickers: List[Rank]) extends Combination(6, kickers)
+  case class Straight(override val kickers: List[Rank]) extends Combination(5, kickers)
+  case class Three(override val kickers: List[Rank]) extends Combination(4, kickers)
+  case class TwoPair(override val kickers: List[Rank]) extends Combination(3, kickers)
+  case class Pair(override val kickers: List[Rank]) extends Combination(2, kickers)
+  case class HighCard(override val kickers: List[Rank]) extends Combination(1, kickers)
 
   object Implicits {
 
@@ -118,7 +101,7 @@ object Combinations {
 
     implicit def combinationOrdering: Ordering[Combination] = Ordering
       .by[Combination, Int](_.weight)
-      .orElseBy(_.cards)
+      .orElseBy(_.kickers)
 
   }
 
