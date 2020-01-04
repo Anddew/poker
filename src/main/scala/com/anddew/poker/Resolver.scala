@@ -30,15 +30,19 @@ class Resolver {
       })
     match {
       case List(straightFlush @ _*)
-        if straightFlush.flatten.foldRight(Set.empty[Suit])(
-          (card, set) => set + card.suit
-        ).size == 1 &&
-          straightFlush.flatten.foldRight(Set.empty[Rank])(
+        if {
+          val suits = straightFlush.flatten.foldRight(Set.empty[Suit])(
+            (card, set) => set + card.suit
+          )
+          val ranks = straightFlush.flatten.foldRight(Set.empty[Rank])(
             (card, set) => set + card.rank
-          ).toList
+          )
+          suits.size == 1 && ranks.size == 5 && ranks
+            .toList
             .sorted(Ordering[Rank].reverse)
             .mkString.r
-            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                   => StraightFlush(straightFlush.flatten.map(_.rank).toList)
+            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined
+        }                                                                   => StraightFlush(straightFlush.flatten.map(_.rank).toList)
       case List(four, kicker) if four.size == 4                             => Four(four.map(_.rank) ::: kicker.map(_.rank))
       case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three.map(_.rank) ::: two.map(_.rank))
       case List(flush @ _*)
@@ -46,12 +50,15 @@ class Resolver {
           (card, set) => set + card.suit
         ).size == 1                                                         => Flush(flush.flatten.map(_.rank).toList)
       case List(straight @ _*)
-        if straight.flatten.foldRight(Set.empty[Rank])((
-          card, set) => set + card.rank
-        ).toList
-        .sorted(Ordering[Rank].reverse)
-        .mkString.r
-        .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                       => Straight(straight.flatten.map(_.rank).toList)
+        if {
+          val ranks = straight.flatten.foldRight(Set.empty[Rank])((
+            card, set) => set + card.rank
+          )
+          ranks.size == 5 && ranks.toList
+            .sorted(Ordering[Rank].reverse)
+            .mkString.r
+            .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined
+        }                                                                   => Straight(straight.flatten.map(_.rank).toList)
       case List(three, kickers @ _*) if three.size == 3                     => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
       case List(pair, kickers @ _*) if pair.size == 2                       => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
