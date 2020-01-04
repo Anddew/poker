@@ -27,16 +27,19 @@ object Runner {
           combination = resolver.resolve(board, hand)
         } yield (hand, combination)
 
-        combinations
+        val result = combinations
           .groupBy(_._2)
           .to(SortedMap)
           .map(
             _._2
               .map(_._1)
               .map(list => list.mkString)
-              .mkString("", "=", " ")
+              .sorted
+              .mkString("=")
           )
-          .foreach(print)
+          .mkString(" ")
+
+        println(result)
       })
   }
 

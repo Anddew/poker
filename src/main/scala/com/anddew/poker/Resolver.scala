@@ -36,7 +36,7 @@ class Resolver {
           straightFlush.flatten.foldRight(Set.empty[Rank])(
             (card, set) => set + card.rank
           ).toList
-            .sorted
+            .sorted(Ordering[Rank].reverse)
             .mkString.r
             .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                   => StraightFlush(straightFlush.flatten.toList)
       case List(four, kicker) if four.size == 4                             => Four(four ::: kicker)
@@ -45,9 +45,11 @@ class Resolver {
         if flush.flatten.foldRight(Set.empty[Suit])(
           (card, set) => set + card.suit
         ).size == 1                                                         => Flush(flush.flatten.toList)
-      case List(straight @ _*) if straight.flatten
-        .foldRight(Set.empty[Rank])((card, set) => set + card.rank).toList
-        .sorted
+      case List(straight @ _*)
+        if straight.flatten.foldRight(Set.empty[Rank])((
+          card, set) => set + card.rank
+        ).toList
+        .sorted(Ordering[Rank].reverse)
         .mkString.r
         .findFirstIn(Resolver.STRAIGHT_SEQ).isDefined                       => Straight(straight.flatten.toList)
       case List(three, kickers @ _*) if three.size == 3                     => Three(three ::: kickers.flatten.toList)
