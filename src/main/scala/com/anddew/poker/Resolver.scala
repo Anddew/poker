@@ -1,7 +1,7 @@
 package com.anddew.poker
 
 import com.anddew.poker.Combinations._
-import com.anddew.poker.Ranks.Rank
+import com.anddew.poker.Ranks.{Ace, Five, Rank}
 import com.anddew.poker.Suits.Suit
 
 
@@ -44,7 +44,14 @@ class Resolver {
           suits.size == 1 && ranks.size == 5 && (
             pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
               pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
-        }                                                                   => StraightFlush(straightFlush.flatten.map(_.rank).toList)
+        }                                                                   => {
+        val ranks = straightFlush.flatten.map(_.rank).toList
+        if (ranks.head == Ace && ranks.tail.head == Five)
+          StraightFlush(ranks.tail ::: (ranks.head :: Nil))
+        else {
+          StraightFlush(ranks)
+        }
+      }
       case List(four, kicker) if four.size == 4                             => Four(four.map(_.rank) ::: kicker.map(_.rank))
       case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three.map(_.rank) ::: two.map(_.rank))
       case List(flush @ _*)
@@ -63,7 +70,14 @@ class Resolver {
           ranks.size == 5 && (
             pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
               pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
-        }                                                                   => Straight(straight.flatten.map(_.rank).toList)
+        }                                                                   => {
+        val ranks = straight.flatten.map(_.rank).toList
+        if (ranks.head == Ace && ranks.tail.head == Five)
+          Straight(ranks.tail ::: (ranks.head :: Nil))
+        else {
+          Straight(ranks)
+        }
+      }
       case List(three, kickers @ _*) if three.size == 3                     => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
       case List(pair, kickers @ _*) if pair.size == 2                       => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
