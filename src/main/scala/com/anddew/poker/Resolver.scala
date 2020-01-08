@@ -1,20 +1,24 @@
 package com.anddew.poker
 
 import com.anddew.poker.Combinations._
-import com.anddew.poker.Ranks.{Ace, Five, Rank}
-import com.anddew.poker.Suits.Suit
+import com.anddew.poker.Ranks.{Ace, Five}
 
 
 class Resolver {
 
   import Combinations.Implicits._
 
+  // TODO context bounds
+  def resolve(board: List[Card], hand: Hand)(implicit holdem: Holdem): Combination = {
+    val combinations = for {
+      boardCards <- board.combinations(board.size - holdem.boardHoles)
+      handCards <- hand.cards.combinations(hand.cards.size - holdem.handHoles)
+    } yield boardCards ::: handCards
 
-  def resolve(board: List[Card], hand: List[Card]): Combination = {
-    (board ::: hand)
-      .combinations(5)
+    combinations.map(_.combinations(5)
       .map(findTopCombination)
       .max
+    ).max
   }
 
 
@@ -44,7 +48,7 @@ class Resolver {
           suits.size == 1 && ranks.size == 5 && (
             pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
               pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
-        }                                                                   => {
+        } => {
         val ranks = straightFlush.flatten.map(_.rank).toList
         if (ranks.head == Ace && ranks.tail.head == Five)
           StraightFlush(ranks.tail ::: (ranks.head :: Nil))
@@ -52,16 +56,16 @@ class Resolver {
           StraightFlush(ranks)
         }
       }
-      case List(four, kicker) if four.size == 4                             => Four(four.map(_.rank) ::: kicker.map(_.rank))
-      case List(three, two) if three.size == 3 && two.size == 2             => FullHouse(three.map(_.rank) ::: two.map(_.rank))
-      case List(flush @ _*)
+      case List(four, kicker) if four.size == 4 => Four(four.map(_.rank) ::: kicker.map(_.rank))
+      case List(three, two) if three.size == 3 && two.size == 2 => FullHouse(three.map(_.rank) ::: two.map(_.rank))
+      case List(flush@_*)
         if flush.flatten.foldRight(Set.empty[Suit])(
           (card, set) => set + card.suit
-        ).size == 1                                                         => Flush(flush.flatten.map(_.rank).toList)
-      case List(straight @ _*)
+        ).size == 1 => Flush(flush.flatten.map(_.rank).toList)
+      case List(straight@_*)
         if {
           val ranks = straight.flatten.foldRight(Set.empty[Rank])((
-            card, set) => set + card.rank
+                                                                    card, set) => set + card.rank
           )
           val pattern = ranks
             .toList
@@ -70,7 +74,7 @@ class Resolver {
           ranks.size == 5 && (
             pattern.findFirstIn(Resolver.STRAIGHT_SEQ).isDefined ||
               pattern.findFirstIn(Resolver.WHEEL_STRAIGHT_SEQ).isDefined)
-        }                                                                   => {
+        } => {
         val ranks = straight.flatten.map(_.rank).toList
         if (ranks.head == Ace && ranks.tail.head == Five)
           Straight(ranks.tail ::: (ranks.head :: Nil))
@@ -78,10 +82,10 @@ class Resolver {
           Straight(ranks)
         }
       }
-      case List(three, kickers @ _*) if three.size == 3                     => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
+      case List(three, kickers@_*) if three.size == 3 => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
-      case List(pair, kickers @ _*) if pair.size == 2                       => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
-      case List(kickers @ _*)                                               => HighCard(kickers.flatten.map(_.rank).toList)
+      case List(pair, kickers@_*) if pair.size == 2 => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
+      case List(kickers@_*) => HighCard(kickers.flatten.map(_.rank).toList)
     }
 
   }

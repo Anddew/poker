@@ -1,11 +1,12 @@
 package com.anddew.poker
 
-import com.anddew.poker.Suits.{Spades, Suit}
-import com.anddew.poker.Ranks.Rank
+sealed abstract class Holdem(val boardHoles: Int, val handHoles: Int)
+case object TexasHoldem extends Holdem(0, 0)
+case object OmahaHoldem extends Holdem(2, 2)
+
+sealed abstract class Suit(val symbol: Char)
 
 object Suits {
-
-  sealed abstract class Suit(val symbol: Char)
 
   case object Hearts extends Suit('h')
   case object Diamonds extends Suit('d')
@@ -22,12 +23,12 @@ object Suits {
 
 }
 
-object Ranks {
+sealed abstract class Rank(val symbol: Char, val priority: Int) {
+  def of(suit: Suit): Card = Card(this, suit) // convert to CardOps
+  override def toString: String = symbol.toString
+}
 
-  sealed abstract class Rank(val symbol: Char, val priority: Int) {
-    def of(suit: Suit): Card = Card(this, suit) // convert to CardOps
-    override def toString: String = symbol.toString
-  }
+object Ranks {
 
   case object Two extends Rank('2', 2)
   case object Three extends Rank('3', 3)
@@ -66,14 +67,15 @@ case class Card(rank: Rank, suit: Suit) {
   override def toString: String = s"${ rank.symbol }${ suit.symbol }"
 }
 
-object Card {
-  def apply(rank: Rank, suit: Suit): Card = new Card(rank, suit)
+case class Hand(cards: List[Card]) {
+  override def toString: String = cards.mkString
 }
 
+case class HandCombination(hand: Hand, combination: Combination)
+
+sealed abstract class Combination(val weight: Int, val kickers: List[Rank])
 
 object Combinations {
-
-  sealed abstract class Combination(val weight: Int, val kickers: List[Rank])
 
   case class StraightFlush(override val kickers: List[Rank]) extends Combination(9, kickers)
   case class Four(override val kickers: List[Rank]) extends Combination(8, kickers)

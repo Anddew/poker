@@ -5,43 +5,48 @@ import scala.io.StdIn
 
 object Runner {
 
+  val OMAHA_HOLDEM_OPTION = "--omaha"
+  val EQUAL_SIGN = "="
+  val WHITESPACE = " "
+
   def main(args: Array[String]): Unit = {
 
     import Combinations.Implicits._
 
-    val parser = if (args.contains("--omaha"))
-      ??? //TODO implement omaha
-    else
-      new TexasHoldemParser
+    implicit val holdem: Holdem = if (args.contains(OMAHA_HOLDEM_OPTION)) OmahaHoldem else TexasHoldem
+
+    val parser = holdem match {
+      case OmahaHoldem => ???
+      case TexasHoldem => new TexasHoldemParser
+    }
 
     val resolver = new Resolver
 
     LazyList
       .continually(StdIn.readLine)
       .takeWhile(_ != null)
-      .foreach(submission => {
+      .map(submission => {
         val (board, hands) = parser.parse(submission)
 
         val combinations = for {
           hand <- hands
           combination = resolver.resolve(board, hand)
-        } yield (hand, combination)
+        } yield HandCombination(hand, combination)
 
-        val result = combinations
-          .groupBy(_._2)
-          .to(SortedMap)
-          .map(
-            _._2
-              .map(_._1)
-              .map(list => list.mkString)
+        combinations
+          .groupMap(_.combination)(_.hand)
+          .view
+          .mapValues(
+            handsGroup => handsGroup
+              .map(_.toString)
               .sorted
-              .mkString("=")
+              .mkString(EQUAL_SIGN)
           )
-          .mkString(" ")
-
-        println(result)
+          .to(SortedMap)
+          .values
+          .mkString(WHITESPACE)
       })
+      .foreach(println)
   }
-
 
 }

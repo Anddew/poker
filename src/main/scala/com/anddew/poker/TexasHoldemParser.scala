@@ -8,7 +8,8 @@ trait Parser[A] {
 
 class CardParser extends Parser[Card] {
   override def parse(input: String): Either[String, List[Card]] = {
-    input.toSeq
+    input
+      .toSeq
       .sliding(2, 2)
       .map(pair => for {
         rank <- Ranks.parse(pair.head)
@@ -26,16 +27,22 @@ class CardParser extends Parser[Card] {
 
 class TexasHoldemParser {
 
-  val INPUT_REGEX: Regex = """^(([23456789TJQKA][hdcs]){5})(( ([23456789TJQKA][hdcs]){2})+)$""".r("board", "", "hands")
+  val TEXAS_HOLDEM_REGEX: Regex = """^(([23456789TJQKA][hdcs]){5})(( ([23456789TJQKA][hdcs]){2})+)$""".r("board", "", "hands")
+  val OMAHA_HOLDEM_REGEX: Regex = """^(([23456789TJQKA][hdcs]){5})(( ([23456789TJQKA][hdcs]){4})+)$""".r("board", "", "hands")
 
-  val parser = new CardParser()
+  val cardParser = new CardParser()
 
-  def parse(input: String): (List[Card], List[List[Card]]) = {
-    INPUT_REGEX.findFirstMatchIn(input) match {
+  def parse(input: String)(implicit holdem: Holdem): (List[Card], List[Hand]) = {
+    val regex = holdem match {
+      case TexasHoldem => TEXAS_HOLDEM_REGEX
+      case OmahaHoldem => OMAHA_HOLDEM_REGEX
+    }
+
+    regex.findFirstMatchIn(input) match {
       case Some(submission) =>
         val boardString = submission.group("board")
 
-        val board = parser.parse(boardString) match {
+        val board = cardParser.parse(boardString) match {
           case Right(list) => list
 //          case Right(List(_*))                               => println("error. Expected 5 card on board.")
 //          case Left(error)                                   => println(error)
@@ -43,16 +50,17 @@ class TexasHoldemParser {
 
         val handsString = submission.group("hands").trim
 
-        val cards = for {
+        val hands = for {
           hand <- handsString.split("\\s+").toList
-          cards = parser.parse(hand) match {
+          cards = cardParser.parse(hand) match {
             case Right(hand) => hand
 //            case Right(List(_*))          => println("error. Expected 2 card on hand.")
 //            case Left(error)              => println(error)
           }
-        } yield cards
+        } yield Hand(cards)
 
-        (board, cards)
+        (board, hands)
+//      case None => println(s"Wrong input, cannot be parsed.")
   }
 }
 
