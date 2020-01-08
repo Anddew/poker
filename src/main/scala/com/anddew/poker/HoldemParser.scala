@@ -25,7 +25,7 @@ class CardParser extends Parser[Card] {
   }
 }
 
-class TexasHoldemParser {
+class HoldemParser {
 
   val TEXAS_HOLDEM_REGEX: Regex = """^(([23456789TJQKA][hdcs]){5})(( ([23456789TJQKA][hdcs]){2})+)$""".r("board", "", "hands")
   val OMAHA_HOLDEM_REGEX: Regex = """^(([23456789TJQKA][hdcs]){5})(( ([23456789TJQKA][hdcs]){4})+)$""".r("board", "", "hands")

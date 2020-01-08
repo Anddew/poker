@@ -15,11 +15,7 @@ object Runner {
 
     implicit val holdem: Holdem = if (args.contains(OMAHA_HOLDEM_OPTION)) OmahaHoldem else TexasHoldem
 
-    val parser = holdem match {
-      case OmahaHoldem => ???
-      case TexasHoldem => new TexasHoldemParser
-    }
-
+    val parser = new HoldemParser
     val resolver = new Resolver
 
     LazyList
