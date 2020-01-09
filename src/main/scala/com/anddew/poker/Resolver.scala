@@ -1,14 +1,12 @@
 package com.anddew.poker
 
-import com.anddew.poker.Combinations._
-import com.anddew.poker.Ranks.{Ace, Five}
+import com.anddew.poker.model.Combinations._
+import com.anddew.poker.model.Ranks._
+import com.anddew.poker.model.{Card, Combination, Hand, Holdem, Rank, Suit}
 
 
 class Resolver {
 
-  import Combinations.Implicits._
-
-  // TODO context bounds
   def resolve(board: List[Card], hand: Hand)(implicit holdem: Holdem): Combination = {
     val combinations = for {
       boardCards <- board.combinations(board.size - holdem.boardHoles)
@@ -56,7 +54,7 @@ class Resolver {
           StraightFlush(ranks)
         }
       }
-      case List(four, kicker) if four.size == 4 => Four(four.map(_.rank) ::: kicker.map(_.rank))
+      case List(four, kicker) if four.size == 4 => FourOfAKind(four.map(_.rank) ::: kicker.map(_.rank))
       case List(three, two) if three.size == 3 && two.size == 2 => FullHouse(three.map(_.rank) ::: two.map(_.rank))
       case List(flush@_*)
         if flush.flatten.foldRight(Set.empty[Suit])(
@@ -82,7 +80,7 @@ class Resolver {
           Straight(ranks)
         }
       }
-      case List(three, kickers@_*) if three.size == 3 => Three(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
+      case List(three, kickers@_*) if three.size == 3 => ThreeOfAKind(three.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(pair1, pair2, kicker) if pair1.size == 2 && pair2.size == 2 => TwoPair(pair1.map(_.rank) ::: pair2.map(_.rank) ::: kicker.map(_.rank))
       case List(pair, kickers@_*) if pair.size == 2 => Pair(pair.map(_.rank) ::: kickers.flatten.map(_.rank).toList)
       case List(kickers@_*) => HighCard(kickers.flatten.map(_.rank).toList)

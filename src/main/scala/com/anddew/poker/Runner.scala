@@ -1,5 +1,7 @@
 package com.anddew.poker
 
+import com.anddew.poker.model.{HandCombination, Holdem, OmahaHoldem, TexasHoldem}
+
 import scala.collection.SortedMap
 import scala.io.StdIn
 
@@ -10,8 +12,6 @@ object Runner {
   val WHITESPACE = " "
 
   def main(args: Array[String]): Unit = {
-
-    import Combinations.Implicits._
 
     implicit val holdem: Holdem = if (args.contains(OMAHA_HOLDEM_OPTION)) OmahaHoldem else TexasHoldem
 

@@ -1,5 +1,7 @@
 package com.anddew.poker
 
+import com.anddew.poker.model.{Card, Hand, Holdem, OmahaHoldem, Ranks, Suits, TexasHoldem}
+
 import scala.util.matching.Regex
 
 trait Parser[A] {
