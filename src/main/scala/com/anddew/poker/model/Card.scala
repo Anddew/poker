@@ -1,5 +1,11 @@
 package com.anddew.poker.model
 
-case class Card(rank: Rank, suit: Suit) {
-  override def toString: String = s"${ rank.symbol }${ suit.symbol }"
+
+final case class Card(rank: Rank, suit: Suit)
+
+
+final class CardSyntax(private val rank: Rank) extends AnyVal {
+
+  def of(suit: Suit): Card = Card(rank, suit)
+
 }

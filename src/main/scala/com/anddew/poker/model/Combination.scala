@@ -1,17 +1,23 @@
 package com.anddew.poker.model
 
-sealed abstract class Combination(val weight: Int, val kickers: List[Rank])
+import enumeratum.{Enum, EnumEntry}
 
-object Combinations {
 
-  case class StraightFlush(override val kickers: List[Rank]) extends Combination(9, kickers)
-  case class FourOfAKind(override val kickers: List[Rank]) extends Combination(8, kickers)
-  case class FullHouse(override val kickers: List[Rank]) extends Combination(7, kickers)
-  case class Flush(override val kickers: List[Rank]) extends Combination(6, kickers)
-  case class Straight(override val kickers: List[Rank]) extends Combination(5, kickers)
-  case class ThreeOfAKind(override val kickers: List[Rank]) extends Combination(4, kickers)
-  case class TwoPair(override val kickers: List[Rank]) extends Combination(3, kickers)
-  case class Pair(override val kickers: List[Rank]) extends Combination(2, kickers)
-  case class HighCard(override val kickers: List[Rank]) extends Combination(1, kickers)
+sealed abstract case class Combination private (weight: Int)  extends EnumEntry
+
+object Combination extends Enum[Combination] {
+
+  override def values: IndexedSeq[Combination] = findValues
+
+  // TODO smart constructor to resolve combination?
+  final case object StraightFlush extends Combination(9)
+  final case object FourOfAKind extends Combination(8)
+  final case object FullHouse extends Combination(7)
+  final case object Flush extends Combination(6)
+  final case object Straight extends Combination(5)
+  final case object ThreeOfAKind extends Combination(4)
+  final case object TwoPair extends Combination(3)
+  final case object Pair extends Combination(2)
+  final case object HighCard extends Combination(1)
 
 }
