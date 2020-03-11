@@ -1,10 +1,11 @@
 package com.anddew.poker
 
+// TODO replace with Order
 package object model {
 
-  implicit def rankOrdering: Ordering[Rank] = Ordering.by(_.priority)
+  implicit val rankOrdering: Ordering[Rank] = Ordering.by(_.priority)
 
-  implicit def cardOrdering: Ordering[Card] = Ordering.by(_.rank)
+  implicit val cardOrdering: Ordering[Card] = Ordering.by(_.rank)
 
   implicit def listOrdering[A](implicit ord: Ordering[A]): Ordering[List[A]] =
     (left: List[A], right: List[A]) => {
@@ -14,8 +15,8 @@ package object model {
       }
     }
 
-  implicit def combinationOrdering: Ordering[Combination] = Ordering
-    .by[Combination, Int](_.weight)
-    .orElseBy(_.kickers)
+  // TODO upgrade to match cases to check each Combination subtype
+  implicit val combinationOrdering: Ordering[Combination] = Ordering.by[Combination, Int](_.weight)
+  implicit val handCombinationOrdering: Ordering[HandCombination] = Ordering.by[HandCombination, Combination](_.combination)
 
 }

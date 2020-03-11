@@ -3,7 +3,7 @@ package com.anddew.poker.model
 import enumeratum._
 
 
-sealed abstract case class Suit private (symbol: Char) extends EnumEntry
+sealed abstract class Suit private (val symbol: Char) extends EnumEntry
 
 object Suit extends Enum[Suit] {
 

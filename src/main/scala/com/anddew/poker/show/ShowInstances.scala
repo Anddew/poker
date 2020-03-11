@@ -1,38 +1,27 @@
 package com.anddew.poker.show
 
 import cats.Show
-import com.anddew.poker.model.{Card, Hand, Rank, Suit}
-import cats.implicits.showInterpolator
-import cats.syntax._
+import cats.data.NonEmptyList
+import cats.kernel.Order
+import com.anddew.poker.model.{Card, Hand, HandCombination, Rank, Suit}
+import cats.implicits._
+import com.anddew.poker.error.AppError
+
 
 object ShowInstances {
-
-  import ListShowInstances._
 
   implicit val rankShow: Show[Rank] = rank => s"${ rank.symbol }"
   implicit val suitShow: Show[Suit] = suit => s"${ suit.symbol }"
   implicit val cardShow: Show[Card] = card => show"${ card.rank }${ card.suit }"
+  implicit val cardListShow: Show[List[Card]] = cards => cards.iterator.map(_.show).mkString("")
   implicit val handShow: Show[Hand] = hand => show"${ hand.cards }"
-  implicit val cardListShow: Show[List[Card]] = listWithoutSeparatorShow
-  implicit val handListShow: Show[List[Hand]] = listWithEqualsSeparatorShow
+  implicit val handCombinationShow: Show[HandCombination] = handCombination => show"${ handCombination.hand }"
+  implicit val handCombinationListShow: Show[List[HandCombination]] = combinations =>
+    combinations.groupByNel(identity)(Order.fromOrdering)
+      .view.mapValues(_.mkString_("="))
+      .values.mkString(" ")
 
-  object ListShowInstances {
-
-    implicit def listWithEqualsSeparatorShow[A](implicit show: Show[A]): Show[List[A]] =
-      listWithSeparatorShow[A]("=")
-
-    implicit def listWithWhitespaceSeparatorShow[A](implicit show: Show[A]): Show[List[A]] =
-      listWithSeparatorShow[A](" ")
-
-    implicit def listWithoutSeparatorShow[A](implicit show: Show[A]): Show[List[A]] =
-      listWithSeparatorShow[A]("")
-
-    private[this] def listWithSeparatorShow[A](separator: String)(implicit show: Show[A]): Show[List[A]] =
-      _.iterator.map(show.show).mkString(separator)
-
-  }
-
-
-
+  implicit val errorShow: Show[AppError] = error => error.toString
+  implicit val errorNelShow: Show[NonEmptyList[AppError]] = errorsNel => errorsNel.map(_.show).toList.mkString("<", ", ", ">")
 
 }

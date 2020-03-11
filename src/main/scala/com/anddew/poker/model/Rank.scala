@@ -3,7 +3,7 @@ package com.anddew.poker.model
 import enumeratum._
 
 
-sealed abstract case class Rank private (symbol: Char, priority: Int) extends EnumEntry
+sealed abstract class Rank private (val symbol: Char, val priority: Int) extends EnumEntry
 
 object Rank extends Enum[Rank] {
 
@@ -11,6 +11,7 @@ object Rank extends Enum[Rank] {
 
   override def values: IndexedSeq[Rank] = findValues
 
+  // TODO add config provided symbols from external configuration file
   final case object Two extends Rank('2', 2)
   final case object Three extends Rank('3', 3)
   final case object Four extends Rank('4', 4)
