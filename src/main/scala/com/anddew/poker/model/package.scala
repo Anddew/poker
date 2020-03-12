@@ -1,12 +1,19 @@
 package com.anddew.poker
 
-// TODO replace with Order
+import cats.Order
+import com.anddew.poker.model.Combination._
+
+
 package object model {
 
-  implicit val rankOrdering: Ordering[Rank] = Ordering.by(_.priority)
+  // TODO move to companions
+  implicit val rankOrdering: Ordering[Rank] = Ordering.by[Rank, Int](_.weight).reverse
+  implicit val rankOrder: Order[Rank] = Order.fromOrdering
 
-  implicit val cardOrdering: Ordering[Card] = Ordering.by(_.rank)
+  implicit val cardOrdering: Ordering[Card] = Ordering.by[Card, Rank](_.rank)
+  implicit val cardOrder: Order[Card] = Order.fromOrdering
 
+  // TODO exists generic listorder in Order?
   implicit def listOrdering[A](implicit ord: Ordering[A]): Ordering[List[A]] =
     (left: List[A], right: List[A]) => {
       if (left.isEmpty) 0 else {
@@ -15,8 +22,6 @@ package object model {
       }
     }
 
-  // TODO upgrade to match cases to check each Combination subtype
-  implicit val combinationOrdering: Ordering[Combination] = Ordering.by[Combination, Int](_.weight)
   implicit val handCombinationOrdering: Ordering[HandCombination] = Ordering.by[HandCombination, Combination](_.combination)
 
 }

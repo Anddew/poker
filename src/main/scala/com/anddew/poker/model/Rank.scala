@@ -3,7 +3,7 @@ package com.anddew.poker.model
 import enumeratum._
 
 
-sealed abstract class Rank private (val symbol: Char, val priority: Int) extends EnumEntry
+sealed abstract class Rank private (val symbol: Char, val weight: Int) extends EnumEntry
 
 object Rank extends Enum[Rank] {
 

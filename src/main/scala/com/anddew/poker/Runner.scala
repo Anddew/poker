@@ -12,15 +12,12 @@ import com.anddew.poker.error.ValidationError.IllegalLength
 import com.anddew.poker.model.Holdem.{OmahaHoldem, TexasHoldem}
 import com.anddew.poker.parsing.Parser
 import com.anddew.poker.parsing.ParserInstances.submissionParser
-import com.anddew.poker.resolver.Resolver
 import com.anddew.poker.show.ShowInstances.{errorNelShow, handCombinationListShow}
 
 
 object Runner extends IOApp {
 
   val OMAHA_HOLDEM_OPTION = "--omaha"
-
-  val resolver = Resolver()
 
   // TODO add Validated validation
   def validate(submission: Submission)(implicit holdem: Holdem): ValidatedNel[AppError, Submission] =
@@ -42,25 +39,23 @@ object Runner extends IOApp {
     val combos = for {
       boardCards <- board.cards.combinations(board.cards.size - holdem.boardHoles)
       handCards <- hand.cards.combinations(hand.cards.size - holdem.handHoles)
-    } yield (boardCards ::: handCards).combinations(5).map(resolver.resolve).max
+    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination).max
 
     combos.max
   }
 
-
   def processSubmission(submission: String)(implicit holdem: Holdem): EitherNel[AppError, List[HandCombination]] = for {
     parsedSubmission <- Parser.parse(submission)
     validatedSubmission <- validate(parsedSubmission).toEither
-    handCombination = validatedSubmission.hands.map(hand => HandCombination(hand, resolveHand(validatedSubmission.board, hand)))
-  } yield handCombination
+  } yield validatedSubmission.hands.map(hand => HandCombination(hand, resolveHand(validatedSubmission.board, hand)))
 
   // TODO does not handle EOF
   def handleSubmission(implicit holdem: Holdem): IO[Unit] = for {
     submission <- IO(StdIn.readLine)
     _ <- if (submission != null) for {
       result <- IO(processSubmission(submission).fold(
-        error => Show[NonEmptyList[AppError]].show(error),
-        result => Show[List[HandCombination]].show(result)
+        Show[NonEmptyList[AppError]].show,
+        Show[List[HandCombination]].show
       ))
       _ <- IO(println(result))
       _ <- handleSubmission
