@@ -42,16 +42,9 @@ object Runner extends IOApp {
     val combos = for {
       boardCards <- board.cards.combinations(board.cards.size - holdem.boardHoles)
       handCards <- hand.cards.combinations(hand.cards.size - holdem.handHoles)
-    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination)
-//      .map(x => {
-//        println(x)
-//        x
-//      })
-      .max
+    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination).max
 
-    val res = combos.max
-    println(s"max - $res")
-    res
+    combos.max
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): EitherNel[AppError, List[HandCombination]] = for {
