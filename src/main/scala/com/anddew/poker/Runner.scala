@@ -35,13 +35,23 @@ object Runner extends IOApp {
       )))
     }
 
+
   def resolveHand(board: Board, hand: Hand)(implicit holdem: Holdem): Combination = {
+    import Combination.combinationOrdering
+
     val combos = for {
       boardCards <- board.cards.combinations(board.cards.size - holdem.boardHoles)
       handCards <- hand.cards.combinations(hand.cards.size - holdem.handHoles)
-    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination).max
+    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination)
+//      .map(x => {
+//        println(x)
+//        x
+//      })
+      .max
 
-    combos.max
+    val res = combos.max
+    println(s"max - $res")
+    res
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): EitherNel[AppError, List[HandCombination]] = for {
@@ -49,7 +59,7 @@ object Runner extends IOApp {
     validatedSubmission <- validate(parsedSubmission).toEither
   } yield validatedSubmission.hands.map(hand => HandCombination(hand, resolveHand(validatedSubmission.board, hand)))
 
-  // TODO does not handle EOF
+  // TODO does not handle EOF?
   def handleSubmission(implicit holdem: Holdem): IO[Unit] = for {
     submission <- IO(StdIn.readLine)
     _ <- if (submission != null) for {

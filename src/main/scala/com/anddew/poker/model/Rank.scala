@@ -1,11 +1,15 @@
 package com.anddew.poker.model
 
+import cats.Order
 import enumeratum._
 
 
 sealed abstract class Rank private (val symbol: Char, val weight: Int) extends EnumEntry
 
 object Rank extends Enum[Rank] {
+
+  implicit val rankOrdering: Ordering[Rank] = Ordering.by[Rank, Int](_.weight)
+  implicit val rankOrder: Order[Rank] = Order.fromOrdering
 
   val ranks: Map[Char, Rank] = findValues.map(rank => (rank.symbol, rank)).toMap
 

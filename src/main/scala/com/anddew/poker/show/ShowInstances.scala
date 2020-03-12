@@ -17,8 +17,8 @@ object ShowInstances {
   implicit val handShow: Show[Hand] = hand => show"${ hand.cards }"
   implicit val handCombinationShow: Show[HandCombination] = handCombination => show"${ handCombination.hand }"
   implicit val handCombinationListShow: Show[List[HandCombination]] = combinations =>
-    combinations.groupByNel(identity)(Order.fromOrdering)
-      .view.mapValues(_.mkString_("="))
+    combinations.groupByNel(identity)
+      .view.mapValues(combinations => combinations.map(_.show).sorted.mkString_("="))
       .values.mkString(" ")
 
   implicit val errorShow: Show[AppError] = error => error.toString
