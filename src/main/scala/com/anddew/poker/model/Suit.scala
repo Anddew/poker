@@ -8,7 +8,8 @@ sealed abstract class Suit private (val symbol: Char) extends EnumEntry
 object Suit extends Enum[Suit] {
 
   override def values: IndexedSeq[Suit] = findValues
-  val suits: Map[Char, Suit] = findValues.map(suit => (suit.symbol, suit)).toMap
+
+  val suits: Map[Char, Suit] = values.map(suit => (suit.symbol, suit)).toMap
 
   final case object Hearts extends Suit('h')
   final case object Diamonds extends Suit('d')

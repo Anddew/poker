@@ -11,9 +11,9 @@ object Rank extends Enum[Rank] {
   implicit val rankOrdering: Ordering[Rank] = Ordering.by[Rank, Int](_.weight)
   implicit val rankOrder: Order[Rank] = Order.fromOrdering
 
-  val ranks: Map[Char, Rank] = findValues.map(rank => (rank.symbol, rank)).toMap
-
   override def values: IndexedSeq[Rank] = findValues
+
+  val ranks: Map[Char, Rank] = values.map(rank => (rank.symbol, rank)).toMap
 
   // TODO add config provided symbols from external configuration file
   final case object Two extends Rank('2', 2)

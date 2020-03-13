@@ -3,7 +3,7 @@ package com.anddew.poker.model
 import cats.implicits._
 import com.anddew.poker.model.Rank._
 
-import scala.collection.{Set, SortedSet, immutable}
+import scala.collection.{Set, SortedSet}
 
 
 sealed abstract class Combination private(val weight: Int)
@@ -27,7 +27,10 @@ object Combination {
 
 
   def findCombination(cards: List[Card]): Combination = {
-    checkAll.iterator.map(_.apply(cards)).find(_.isDefined).flatten
+    checkAll.iterator
+      .map(_.apply(cards))
+      .find(_.isDefined)
+      .flatten
       .getOrElse(sys.error(s"Cannot resolve combination for cards $cards.")) // should never happens
   }
 
