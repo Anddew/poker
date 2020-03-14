@@ -25,4 +25,17 @@ class OmahaRunnerSpec extends AnyFlatSpec with Matchers {
     out.toString mustBe expected
   }
 
+  // 31.549 sec
+  // 31.300 sec
+  // 31.400 sec
+  // 31.612 sec
+  // 31.114 sec
+
+  // Added parallelism for hands
+  // 12.687 sec
+  // 12.195 sec
+  // 15.430 sec
+  // 13.869 sec
+  // 11.794 sec
+
 }

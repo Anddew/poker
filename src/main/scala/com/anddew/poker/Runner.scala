@@ -42,13 +42,20 @@ object Runner extends IOApp.WithContext {
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): IO[SubmissionResult] = {
-    val res = for {
+    import cats.instances.list._
+    import cats.syntax.parallel._
+    import cats.instances.either._
+    import cats.syntax.traverse._
+
+    val result = for {
       parsedSubmission <- Parser.parse(submission)
       validatedSubmission <- Validator.validate(parsedSubmission).toEither
-      handCombinations = validatedSubmission.hands.map(hand => HandCombination(hand, resolveHand(validatedSubmission.board, hand)))
-    } yield handCombinations
+    } yield validatedSubmission.hands
+      .map(hand => IO(
+        HandCombination(hand, resolveHand(validatedSubmission.board, hand))
+      ))
 
-    IO(res)
+    result.map(_.parSequence).sequence
   }
 
   def handleSubmission(implicit holdem: Holdem): IO[Unit] = for {
