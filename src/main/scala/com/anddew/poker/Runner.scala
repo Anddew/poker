@@ -31,6 +31,8 @@ object Runner extends IOApp.WithContext {
   type SubmissionResult = EitherNel[AppError, List[HandCombination]]
 
   def resolveHand(board: Board, hand: Hand)(implicit holdem: Holdem): Combination = {
+    import com.anddew.poker.show.ShowInstances.handShow
+    println(s"resolve for ${Show[Hand].show(hand)} - ${Thread.currentThread().getName}")
     import Combination.combinationOrdering
 
     val combos = for {
@@ -42,6 +44,7 @@ object Runner extends IOApp.WithContext {
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): IO[SubmissionResult] = {
+    println(s"process - ${Thread.currentThread().getName}")
     import cats.instances.list._
     import cats.syntax.parallel._
     import cats.instances.either._
