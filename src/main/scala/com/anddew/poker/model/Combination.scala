@@ -3,13 +3,14 @@ package com.anddew.poker.model
 import cats.Show
 import cats.implicits._
 import com.anddew.poker.model.Rank._
+import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
 
 import scala.collection.{Set, SortedSet}
 
 
 sealed abstract class Combination private(val weight: Int)
 
-object Combination {
+object Combination extends StrictLogging {
 
   type CardsToCombination = List[Card] => Option[Combination]
 
@@ -29,7 +30,7 @@ object Combination {
 
   def findCombination(cards: List[Card]): Combination = {
     import com.anddew.poker.show.ShowInstances.cardListShow
-    println(s"find for ${Show[List[Card]].show(cards)} - ${Thread.currentThread().getName}")
+    logger.debug(s"find for ${Show[List[Card]].show(cards)} - ${Thread.currentThread().getName}")
     checkAll.iterator
       .map(_.apply(cards))
       .find(_.isDefined)
