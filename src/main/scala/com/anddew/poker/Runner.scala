@@ -20,7 +20,7 @@ import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
 import scala.concurrent.ExecutionContext
 
 
-object Runner extends IOApp.WithContext with StrictLogging {
+object Runner extends IOApp.WithContext {
 
   override protected def executionContextResource: Resource[SyncIO, ExecutionContext] = {
     Resource.make(SyncIO(Executors.newCachedThreadPool()))(pool => SyncIO {
@@ -32,8 +32,6 @@ object Runner extends IOApp.WithContext with StrictLogging {
   type SubmissionResult = EitherNel[AppError, List[HandCombination]]
 
   def resolveHand(board: Board, hand: Hand)(implicit holdem: Holdem): Combination = {
-    import com.anddew.poker.show.ShowInstances.handShow
-    logger.debug(s"resolve for ${Show[Hand].show(hand)} - ${Thread.currentThread().getName}")
     import Combination.combinationOrdering
 
     val combos = for {
@@ -45,7 +43,6 @@ object Runner extends IOApp.WithContext with StrictLogging {
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): IO[SubmissionResult] = {
-    logger.debug(s"process - ${Thread.currentThread().getName}")
     import cats.instances.list._
     import cats.syntax.parallel._
     import cats.instances.either._
@@ -63,12 +60,12 @@ object Runner extends IOApp.WithContext with StrictLogging {
   }
 
   def handleSubmission(implicit holdem: Holdem): IO[Unit] = for {
-//    submission <- IO(StdIn.readLine)
-    submission <- IO("3d3h5d8cAc 3c4h 9sJh 7cQh Ts5s TdQd Tc6c 2c4d 7d5c 7hKd")
+    submission <- IO(StdIn.readLine)
+//    submission <- IO("3d3h5d8cAc 3c4h 9sJh 7cQh Ts5s TdQd Tc6c 2c4d 7d5c 7hKd")
     _ <- if (submission == null) IO.unit else for {
       result <- processSubmission(submission)
       _ <- IO(println(Show[SubmissionResult].show(result)))
-//      _ <- handleSubmission
+      _ <- handleSubmission
     } yield ()
   } yield ()
 
