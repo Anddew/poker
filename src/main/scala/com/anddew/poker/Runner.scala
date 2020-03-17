@@ -31,15 +31,26 @@ object Runner extends IOApp.WithContext {
 
   type SubmissionResult = EitherNel[AppError, List[HandCombination]]
 
-  def resolveHand(board: Board, hand: Hand)(implicit holdem: Holdem): Combination = {
+  def resolveHand(board: Board, hand: Hand)(implicit holdem: Holdem): IO[HandCombination] = {
     import Combination.combinationOrdering
+    import cats.instances.list._
+    import cats.syntax.parallel._
+    import cats.instances.either._
+    import cats.syntax.traverse._
 
-    val combos = for {
-      boardCards <- board.cards.combinations(holdem.boardSize - holdem.boardHoles)
-      handCards <- hand.cards.combinations(holdem.handSize - holdem.handHoles)
-    } yield (boardCards ::: handCards).combinations(5).map(Combination.findCombination).max
+    IO.suspend {
+      println(s"resolve - ${Thread.currentThread().getName}")
+      val combos = for {
+        boardCards <- board.cards.combinations(holdem.boardSize - holdem.boardHoles).toList
+        handCards <- hand.cards.combinations(holdem.handSize - holdem.handHoles)
+      } yield (boardCards ::: handCards).combinations(5).toList
+        .map(cards => Combination.findCombination(cards))
+        .parSequence
+        .map(_.max)
+        .map(HandCombination(hand, _))
 
-    combos.max
+      combos.parSequence.map(_.max)
+    }
   }
 
   def processSubmission(submission: String)(implicit holdem: Holdem): IO[SubmissionResult] = {
@@ -47,25 +58,25 @@ object Runner extends IOApp.WithContext {
     import cats.syntax.parallel._
     import cats.instances.either._
     import cats.syntax.traverse._
+    println(s"process - ${Thread.currentThread().getName}")
 
     val result = for {
       parsedSubmission <- Parser.parse(submission)
       validatedSubmission <- Validator.validate(parsedSubmission).toEither
     } yield validatedSubmission.hands
-      .map(hand => IO(
-        HandCombination(hand, resolveHand(validatedSubmission.board, hand))
-      ))
+      .map(hand => resolveHand(validatedSubmission.board, hand))
 
     result.map(_.parSequence).sequence
   }
 
   def handleSubmission(implicit holdem: Holdem): IO[Unit] = for {
-    submission <- IO(StdIn.readLine)
+//    submission <- IO(StdIn.readLine)
 //    submission <- IO("3d3h5d8cAc 3c4h 9sJh 7cQh Ts5s TdQd Tc6c 2c4d 7d5c 7hKd")
+    submission <- IO("3d3h5d8cAc 3c4h 9sJh")
     _ <- if (submission == null) IO.unit else for {
       result <- processSubmission(submission)
       _ <- IO(println(Show[SubmissionResult].show(result)))
-      _ <- handleSubmission
+//      _ <- handleSubmission
     } yield ()
   } yield ()
 

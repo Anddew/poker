@@ -1,5 +1,6 @@
 package com.anddew.poker.model
 
+import cats.effect.IO
 import cats.implicits._
 import com.anddew.poker.model.Rank._
 
@@ -26,13 +27,16 @@ object Combination {
   }
 
 
-  def findCombination(cards: List[Card]): Combination = {
-    import com.anddew.poker.show.ShowInstances.cardListShow
-    checkAll.iterator
-      .map(_.apply(cards))
-      .find(_.isDefined)
-      .flatten
-      .getOrElse(sys.error(s"Cannot resolve combination for cards $cards.")) // should never happens
+  def findCombination(cards: List[Card]): IO[Combination] = {
+    IO.suspend {
+      println(s"find - ${Thread.currentThread().getName}")
+      val combination = checkAll.iterator
+        .map(_.apply(cards))
+        .find(_.isDefined)
+        .flatten
+        .getOrElse(sys.error(s"Cannot resolve combination for cards $cards.")) // should never happens
+      IO(combination)
+    }
   }
 
   private val checkAll: List[CardsToCombination] = List(
