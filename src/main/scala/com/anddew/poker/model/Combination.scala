@@ -11,7 +11,7 @@ import scala.collection.{Set, SortedSet}
 
 sealed abstract class Combination private(val weight: Int)
 
-object Combination extends StrictLogging {
+object Combination /*extends StrictLogging*/ {
 
   type CardsToCombination = List[Card] => Option[Combination]
 
@@ -32,7 +32,7 @@ object Combination extends StrictLogging {
   def findCombination(cards: List[Card]): IO[Combination] = {
     import com.anddew.poker.show.ShowInstances.cardListShow
     IO.suspend {
-      logger.debug(s"find for ${ Show[List[Card]].show(cards) } - ${ Thread.currentThread().getName }")
+//      logger.debug(s"find for ${ Show[List[Card]].show(cards) } - ${ Thread.currentThread().getName }")
       val combination = checkAll.iterator
         .map(_.apply(cards))
         .find(_.isDefined)

@@ -20,7 +20,7 @@ import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
 import scala.concurrent.ExecutionContext
 
 
-object Runner extends IOApp.WithContext with StrictLogging {
+object Runner extends IOApp.WithContext/* with StrictLogging*/ {
 
   override protected def executionContextResource: Resource[SyncIO, ExecutionContext] = {
     Resource.make(SyncIO(Executors.newCachedThreadPool()))(pool => SyncIO {
@@ -40,7 +40,7 @@ object Runner extends IOApp.WithContext with StrictLogging {
     import cats.syntax.traverse._
 
     IO.suspend {
-      logger.debug(s"resolve for ${Show[Hand].show(hand)} - ${Thread.currentThread().getName}")
+//      logger.debug(s"resolve for ${Show[Hand].show(hand)} - ${Thread.currentThread().getName}")
       val combos = for {
         boardCards <- board.cards.combinations(holdem.boardSize - holdem.boardHoles).toList
         handCards <- hand.cards.combinations(holdem.handSize - holdem.handHoles)
@@ -59,7 +59,7 @@ object Runner extends IOApp.WithContext with StrictLogging {
     import cats.syntax.traverse._
 
     IO.suspend {
-      logger.debug(s"process - ${Thread.currentThread().getName}")
+//      logger.debug(s"process - ${Thread.currentThread().getName}")
       val result = for {
         parsedSubmission <- Parser.parse(submission)
         validatedSubmission <- Validator.validate(parsedSubmission).toEither
