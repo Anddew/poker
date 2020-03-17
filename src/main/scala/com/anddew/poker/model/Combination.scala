@@ -1,6 +1,7 @@
 package com.anddew.poker.model
 
 import cats.Show
+import cats.effect.IO
 import cats.implicits._
 import com.anddew.poker.model.Rank._
 import com.typesafe.scalalogging.{LazyLogging, StrictLogging}
@@ -28,14 +29,18 @@ object Combination extends StrictLogging {
   }
 
 
-  def findCombination(cards: List[Card]): Combination = {
+  def findCombination(cards: List[Card]): IO[Combination] = {
     import com.anddew.poker.show.ShowInstances.cardListShow
-    logger.debug(s"find for ${Show[List[Card]].show(cards)} - ${Thread.currentThread().getName}")
-    checkAll.iterator
-      .map(_.apply(cards))
-      .find(_.isDefined)
-      .flatten
-      .getOrElse(sys.error(s"Cannot resolve combination for cards $cards.")) // should never happens
+    IO.suspend {
+      logger.debug(s"find for ${ Show[List[Card]].show(cards) } - ${ Thread.currentThread().getName }")
+      val combination = checkAll.iterator
+        .map(_.apply(cards))
+        .find(_.isDefined)
+        .flatten
+        .getOrElse(sys.error(s"Cannot resolve combination for cards $cards.")) // should never happens
+
+      IO(combination)
+    }
   }
 
   private val checkAll: List[CardsToCombination] = List(
